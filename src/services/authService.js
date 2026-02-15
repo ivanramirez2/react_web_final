@@ -1,67 +1,47 @@
-import { v4 as uuidv4 } from 'uuid';
-
-const USERS_KEY = 'app_users';
 const CURRENT_USER_KEY = 'app_current_user';
-
-// Initialize default users if not present
-const initializeUsers = () => {
-    const existingUsers = localStorage.getItem(USERS_KEY);
-    if (!existingUsers) {
-        const defaultUsers = [
-            { id: uuidv4(), username: 'admin', password: 'password', role: 'admin', name: 'Admin User' },
-            { id: uuidv4(), username: 'user', password: 'password', role: 'user', name: 'Regular User' },
-        ];
-        localStorage.setItem(USERS_KEY, JSON.stringify(defaultUsers));
-    }
-};
-
-initializeUsers();
-
-const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+const TOKEN_KEY = 'app_auth_token';
 
 export const authService = {
     login: async (username, password) => {
-        await delay(500); // Simulate network delay
-        const users = JSON.parse(localStorage.getItem(USERS_KEY) || '[]');
-        const user = users.find(u => u.username === username && u.password === password);
+        const response = await fetch('https://dummyjson.com/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password }),
+        });
 
-        if (user) {
-            // Don't return password
-            const { password, ...userWithoutPassword } = user;
-            localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(userWithoutPassword));
-            return userWithoutPassword;
+        if (!response.ok) {
+            throw new Error('Login failed');
         }
-        throw new Error('Invalid credentials');
+
+        const data = await response.json();
+
+        // Simular roles ya que DummyJSON no los provee por defecto
+        // Asignamos 'admin' a emilys y 'user' al resto
+        data.role = data.username === 'emilys' ? 'admin' : 'user';
+
+        localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(data));
+        localStorage.setItem(TOKEN_KEY, data.token);
+
+        return data;
     },
 
-    logout: async () => {
-        await delay(200);
+    logout: () => {
         localStorage.removeItem(CURRENT_USER_KEY);
+        localStorage.removeItem(TOKEN_KEY);
     },
 
     getCurrentUser: () => {
-        const user = localStorage.getItem(CURRENT_USER_KEY);
-        return user ? JSON.parse(user) : null;
+        const userStr = localStorage.getItem(CURRENT_USER_KEY);
+        if (!userStr) return null;
+        const user = JSON.parse(userStr);
+        // Asegurar que tenga rol incluso si es una sesión antigua
+        if (!user.role) {
+            user.role = user.username === 'emilys' ? 'admin' : 'user';
+        }
+        return user;
     },
 
-    register: async (userData) => {
-        await delay(500);
-        const users = JSON.parse(localStorage.getItem(USERS_KEY) || '[]');
-
-        if (users.find(u => u.username === userData.username)) {
-            throw new Error('Username already exists');
-        }
-
-        const newUser = {
-            id: uuidv4(),
-            ...userData,
-            role: 'user', // Default role
-        };
-
-        users.push(newUser);
-        localStorage.setItem(USERS_KEY, JSON.stringify(users));
-
-        const { password, ...userWithoutPassword } = newUser;
-        return userWithoutPassword;
+    getToken: () => {
+        return localStorage.getItem(TOKEN_KEY);
     }
 };
