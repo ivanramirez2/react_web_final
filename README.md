@@ -11,6 +11,9 @@ Este proyecto es una plataforma de administración que permite el control de inv
 - **Gestión CRUD**: Listado (GET), Creación (POST), Edición (PUT) y Borrado (DELETE) de productos.
 - **Diseño Ultra-Responsive**: Adaptado específicamente para 5 breakpoints clave (1920px, 990px, 767px, 510px, 480px).
 - **Control de Roles**: Interfaz adaptativa que muestra herramientas administrativas solo a usuarios con rol 'admin'.
+- **PWA (Progressive Web App)**: Instalable y con soporte offline mediante Service Workers y Manifest.
+- **Despliegue Continuo**: Configurado con GitHub Actions para despliegue automático en GitHub Pages.
+- **Versión Móvil**: Estructura de proyecto React Native incluida en `/mobile_app` para compilación en Android.
 - **Notificaciones**: Feedback en tiempo real mediante `react-toastify`.
 - **Estructura Profesional**: Separación clara de servicios, componentes, stores y hooks.
 
